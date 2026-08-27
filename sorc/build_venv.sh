@@ -1,19 +1,33 @@
 #!/bin/bash
 
-set -eux
+#set -eux
+
+set +u
 
 readonly HOMEaigfs=$(cd $(dirname $(readlink -f -n "${BASH_SOURCE[0]}"))/.. && pwd -P)
 
 source ../versions/build.ver
-set +x
+#set +x
 # TODO: Make this work for non-WCOSS platforms
-module reset
-module load "PrgEnv-intel/${PrgEnv_intel_ver:?}"
-module load "intel/${intel_ver:?}"
-module load "python/${python_ver:?}"
+#module reset
+#jwmodule load "PrgEnv-intel/${PrgEnv_intel_ver:?}"
+echo "beforesource intel 2023.2.1 vars.sh"
+
+source /opt/intel/oneapi/modulefiles-setup.sh
+source /opt/intel/oneapi/compiler/2023.2.1/env/vars.sh
+echo "after source intel 2023.2.1 vars.sh"
+source /opt/intel/oneapi/modulefiles-setup.sh
+export PATH=$PATH:/opt/intel/oneapi/mpi/2021.18/bin
+module use  /opt/intel/oneapi/mpi/2021.18/etc/modulefiles/mpi/
+module load 2021.18
+echo "after load modulel"
+module use /lfs/work/alexander_richert/stack/spack-stack/envs/nco-sci-intel-2021.10.0/modules_flat/Core
+#module load "intel/${intel_ver:?}"
+#jw module load "python/${python_ver:?}"
 module load "g2c/${g2c_ver:?}"
 module list
-set -x
+
+set -ux
 
 # Needed for grib2io
 export G2C_DIR="${g2c_ROOT}"
@@ -33,7 +47,7 @@ mkdir -p "${TMPDIR}"
 
 # Start creating the venv
 #python3 -m virtualenv --relocatable "${venv_dir}" # virtualenv version < 20.0
-python3 -m virtualenv "${venv_dir}"
+/lfs/work/alexander_richert/stack/spack/var/spack/environments/python-3_12/.spack-env/view/bin/python -m venv "${venv_dir}"
 source "${venv_dir}/bin/activate"
 
 # Prepare the venv requirements.txt file and save it in venv
