@@ -1,28 +1,33 @@
-#PBS -N aigfs_prep_%CYC%
-#PBS -j oe
-#PBS -S /bin/bash
-#PBS -q %QUEUE%
-#PBS -l walltime=00:30:00
-#PBS -A %PROJ%-%PROJENVIR%
-#PBS -l place=shared,select=1:ncpus=1:mem=10GB
-#PBS -l debug=true
+#!/bin/bash
+#SBATCH -J aigfs_prep_%CYC%
+#SBATCH -p compute
+#SBATCH -t 00:30:00
+###SBATCH -A %PROJ%-%PROJENVIR%
+#SBATCH --nodes=1
+#SBATCH --tasks=1
+#SBATCH --mem=10GB
+#SBATCH -v
 
 export model=aigfs
 
-%include <head.h>
-%include <envir-p1.h>
+export HOMEaigfs=/lfs/work/russell_manser/software/aigfs.nimbus
+source ${HOMEaigfs}/versions/run.ver
+#%include <head.h>
+#%include <envir-p1.h>
 
-export cyc=%CYC%
+#export cyc=%CYC%
 
-module load intel/${intel_ver:?}
+module use /lfs/work/alexander_richert/stack/spack-stack/envs/nco-sci-intel-2021.10.0/modules_flat/Core
+
+source /opt/intel/oneapi/modulefiles-setup.sh --force
 module load wgrib2/${wgrib2_ver:?}
-module load libjpeg-turbo/${libjpeg_turbo_ver:?}
+module load libjpeg/${libjpeg_ver:?}
 
 source ${HOMEaigfs}/venv/bin/activate
 
 module list
 
-${HOMEaigfs}/jobs/JAIGFS_PREP
+echo "${HOMEaigfs}/jobs/JAIGFS_PREP"
 
 if [[ $? -ne 0 ]]; then
     ecflow_client --msg="***JOB ${ECF_NAME} ERROR RUNNING J-SCRIPT"
@@ -30,11 +35,11 @@ if [[ $? -ne 0 ]]; then
     exit
 fi
 
-%include <tail.h>
-%manual
+#%include <tail.h>
+#%manual
 ###############################################################################
 #
 #  PURPOSE: Prepare data for running a machine learning model with GFS inputs
 #
 ###############################################################################
-%end
+#%end
