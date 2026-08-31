@@ -15,7 +15,8 @@ source ${HOMEaigfs}/versions/run.ver
 #%include <head.h>
 #%include <envir-p1.h>
 
-#export cyc=%CYC%
+export cyc="12"
+export jobid="${SLURM_JOB_NAME/'%CYC%'/${cyc}}.${SLURM_JOB_ID}"
 
 module use /lfs/work/alexander_richert/stack/spack-stack/envs/nco-sci-intel-2021.10.0/modules_flat/Core
 
@@ -23,15 +24,18 @@ source /opt/intel/oneapi/modulefiles-setup.sh --force
 module load wgrib2/${wgrib2_ver:?}
 module load libjpeg/${libjpeg_ver:?}
 
+module use /lfs/work/russell_manser/modulefiles
+module load prod_util/2.0.14
+
 source ${HOMEaigfs}/venv/bin/activate
 
 module list
 
-echo "${HOMEaigfs}/jobs/JAIGFS_PREP"
+${HOMEaigfs}/jobs/JAIGFS_PREP
 
 if [[ $? -ne 0 ]]; then
-    ecflow_client --msg="***JOB ${ECF_NAME} ERROR RUNNING J-SCRIPT"
-    ecflow_client --abort
+    echo "ecflow_client --msg="***JOB ${ECF_NAME} ERROR RUNNING J-SCRIPT""
+    echo "ecflow_client --abort"
     exit
 fi
 
